@@ -1,15 +1,25 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+
 
 Vue.use(Router)
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
-    }
-  ]
+    mode: 'history',
+    routes: [{
+            path: '/',
+            name: 'blogMain',
+            component: resolve => require(['@/components/b_index'], resolve)
+        },
+        {
+            path: '/blogMain',
+            name: 'blogMain',
+            component: resolve => require(['@/components/b_index'], resolve)
+        },
+        {
+            path: '/addBlog',
+            name: 'addBlog',
+            component: resolve => require(['@/components/addBlog'], resolve)
+        }
+    ]
 })
