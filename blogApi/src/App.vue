@@ -1,10 +1,10 @@
 <template>
   <div id="app">
     <header>
-      <blog-header />
+      <blog-header v-if="notLogin" />
     </header>
     <div class="main">
-      <navMenus />
+      <navMenus v-if="notLogin" />
       <transition>
         <router-view class="router" />
       </transition>
@@ -15,6 +15,11 @@
 <script>
 export default {
   name: "App",
+  data() {
+    return {
+      notLogin: this.$store.state.notLogin
+    };
+  },
   components: {
     blogHeader: resolve => require(["@/components/blogHeader"], resolve),
     navMenus: resolve => require(["@/components/navMenus"], resolve)

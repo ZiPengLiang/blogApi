@@ -1,6 +1,7 @@
 <template>
   <div class="header">
     <div class="h_left">博客后台</div>
+    <router-link to="/login">登陆</router-link>
   </div>
 </template>
 <script>

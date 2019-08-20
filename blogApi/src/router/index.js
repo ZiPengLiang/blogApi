@@ -20,6 +20,11 @@ export default new Router({
             path: '/addBlog',
             name: 'addBlog',
             component: resolve => require(['@/components/addBlog'], resolve)
+        },
+        {
+            path: '/login',
+            name: 'login',
+            component: resolve => require(['@/components/login'], resolve)
         }
     ]
 })
