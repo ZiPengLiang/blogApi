@@ -1,6 +1,9 @@
 <template>
   <div class="blogMain">
     <div class="datalists">
+      <div class="linkHeader">
+        <el-button style="float:right" @click="addlink" type="primary">添加友链</el-button>
+      </div>
       <table class="dataTable" id="dataTable">
         <thead>
           <th v-for="(item,index) in tableData.itemList" :key="index">{{item.label}}</th>
@@ -9,13 +12,8 @@
           <tr v-for="(item,index) in tableData.dataList" :key="index">
             <td v-for="(v,k) in item" :key="k">
               <div v-if="k.indexOf('type')==-1">
-                <span v-if="k.indexOf('top') == -1">{{v}}</span>
-                <el-switch
-                  v-else
-                  v-model="item.top"
-                  active-color="#13ce66"
-                  inactive-color="#ff4949"
-                ></el-switch>
+                <!-- v-if="k.indexOf('evaluate') == -1" -->
+                <span :class="k.indexOf('evaluate') == -1?'':'evaluate'">{{v}}</span>
               </div>
               <div v-else>
                 <el-tag class="typeTag" v-for="(t,i) in v" :key="i">{{t}}</el-tag>
@@ -23,19 +21,20 @@
             </td>
             <td>
               <button class="edit" @click="changeBlog(item)">编辑</button>
-              <button class="edit" @click="checkBlog(item)">查看</button>
               <button class="edit" @click="deleteBlog(item)">删除</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <el-dialog title="编辑博客" :visible.sync="changeBlogViable" class="blogDialog">
+    <el-dialog title="编辑友链" :visible.sync="changeLinksViable" class="blogDialog">
       <div class="data">
         <div class="dtitle">
-          <el-input placeholder="请输入内容" v-model="cBlog.title" clearable></el-input>
+          <span>博主：</span>
+          <el-input class="dInput" placeholder="请输入内容" v-model="cBlog.title" clearable></el-input>
         </div>
         <div class="dtype">
+          <div>类型：</div>
           <div>
             <el-tag
               :key="tag"
@@ -47,22 +46,70 @@
             >{{tag}}</el-tag>
             <el-input
               class="input-new-tag"
-              v-if="inputVisible"
+              v-if="cBlog.inputVisible"
               v-model="cBlog.inputValue"
               ref="saveTagInput"
               size="small"
-              @keyup.enter.native="handleInputConfirm"
-              @blur="handleInputConfirm"
+              @keyup.enter.native="handleChangeInput"
+              @blur="handleChangeInput"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showCInput">+ New Tag</el-button>
           </div>
         </div>
-        <div class="dBox">
-          <markdown />
+        <div class="dtitle">
+          <span>评价：</span>
+          <el-input class="dInput" placeholder="请输入评价" v-model="cBlog.evaluate" clearable></el-input>
+        </div>
+        <div class="dtitle">
+          <span>网址：</span>
+          <el-input class="dInput" placeholder="请输入网址" v-model="cBlog.url" clearable></el-input>
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="changeBlogViable = false">取消</el-button>
+        <el-button @click="changeLinksViable = false">取消</el-button>
+        <el-button class="btnColor" type="primary" @click="commitTenant('TenantForm')">确定编辑</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog title="添加友链" :visible.sync="addLinksViable" class="blogDialog">
+      <div class="data">
+        <div class="dtitle">
+          <span>博主：</span>
+          <el-input class="dInput" placeholder="请输入内容" v-model="aLinks.title" clearable></el-input>
+        </div>
+        <div class="dtype">
+          <div>类型：</div>
+          <div>
+            <el-tag
+              :key="tag"
+              class="typeTag"
+              v-for="tag in aLinks.dynamicTags"
+              closable
+              :disable-transitions="false"
+              @close="handleClose(tag)"
+            >{{tag}}</el-tag>
+            <el-input
+              class="input-new-tag"
+              v-if="aLinks.inputVisible"
+              v-model="aLinks.inputValue"
+              ref="saveTagInput"
+              size="small"
+              @keyup.enter.native="handleAddInput"
+              @blur="handleAddInput"
+            ></el-input>
+            <el-button v-else class="button-new-tag" size="small" @click="showAddInput">+ New Tag</el-button>
+          </div>
+        </div>
+        <div class="dtitle">
+          <span>评价：</span>
+          <el-input class="dInput" placeholder="请输入评价" v-model="aLinks.evaluate" clearable></el-input>
+        </div>
+        <div class="dtitle">
+          <span>网址：</span>
+          <el-input class="dInput" placeholder="请输入网址" v-model="aLinks.url" clearable></el-input>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addLinksViable = false">取消</el-button>
         <el-button class="btnColor" type="primary" @click="commitTenant('TenantForm')">确定编辑</el-button>
       </span>
     </el-dialog>
@@ -74,8 +121,12 @@ import markdown from "./markdown";
 export default {
   components: { markdown },
   methods: {
+    //添加博客
+    addlink() {
+      this.addLinksViable = true;
+    },
     changeBlog(item) {
-      this.changeBlogViable = true;
+      this.changeLinksViable = true;
       console.log(item);
     },
     checkBlog(item) {
@@ -88,27 +139,40 @@ export default {
       this.cBlog.dynamicTags.splice(this.cBlog.dynamicTags.indexOf(tag), 1);
     },
 
-    showInput() {
-      this.inputVisible = true;
+    showCInput() {
+      this.cBlog.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    showAddInput() {
+      this.aLinks.inputVisible = true;
       this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
 
-    handleInputConfirm() {
+    handleChangeInput() {
       let inputValue = this.cBlog.inputValue;
       if (inputValue) {
         this.cBlog.dynamicTags.push(inputValue);
       }
-      this.inputVisible = false;
+      this.cBlog.inputVisible = false;
       this.cBlog.inputValue = "";
+    },
+    handleAddInput() {
+      let inputValue = this.aLinks.inputValue;
+      if (inputValue) {
+        this.aLinks.dynamicTags.push(inputValue);
+      }
+      this.aLinks.inputVisible = false;
+      this.aLinks.inputValue = "";
     }
   },
   data() {
     return {
-      inputVisible: false,
-
-      changeBlogViable: false,
+      addLinksViable: false,
+      changeLinksViable: false,
       tableData: {
         ifButton: true,
         itemList: [
@@ -116,19 +180,16 @@ export default {
             label: "日期"
           },
           {
-            label: "题目"
+            label: "博主"
           },
           {
             label: "类型"
           },
           {
-            label: "浏览数"
+            label: "评价"
           },
           {
-            label: "评论数"
-          },
-          {
-            label: "顶置"
+            label: "网址"
           },
           {
             label: "操作"
@@ -139,40 +200,48 @@ export default {
             date: "2016-05-02",
             title: "javascript基础",
             type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: true
+            evaluate:
+              "度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌",
+            url: "www.baidu.com"
           },
           {
             date: "2016-05-02",
             title: "javascript基础",
             type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: true
+            evaluate: "度娘无敌",
+            url: "www.baidu.com"
           },
           {
             date: "2016-05-02",
             title: "javascript基础",
             type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: false
+            evaluate: "度娘无敌",
+            url: "www.baidu.com"
           },
           {
             date: "2016-05-02",
             title: "javascript基础",
             type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: false
+            evaluate: "度娘无敌",
+            url: "www.baidu.com"
           }
         ]
       },
       cBlog: {
         title: "",
         dynamicTags: ["标签一", "标签二", "标签三"],
-        inputValue: ""
+        inputValue: "",
+        inputVisible: false,
+        url: "",
+        evaluate: ""
+      },
+      aLinks: {
+        title: "",
+        dynamicTags: ["标签一", "标签二", "标签三"],
+        inputValue: "",
+        inputVisible: false,
+        url: "",
+        evaluate: ""
       }
     };
   }
@@ -185,6 +254,9 @@ export default {
 }
 .typeTag {
   margin: 2px 8px;
+}
+.linkHeader {
+  height: 50px;
 }
 .blogDialog {
   width: 100%;
@@ -200,10 +272,19 @@ export default {
   margin-top: 10px;
   margin-bottom: 10px;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  /* justify-content: space-around; */
 }
 .dtitle {
-  font-size: 30px;
+  font-size: 15px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 15px 0;
+}
+.dtitle span {
+  display: inline-block;
+  width: 50px;
 }
 .datalists {
   position: relative;
@@ -304,5 +385,12 @@ button.cancel {
   width: 90px;
   margin-left: 10px;
   vertical-align: bottom;
+}
+.evaluate {
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

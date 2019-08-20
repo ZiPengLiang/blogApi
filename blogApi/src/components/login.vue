@@ -7,29 +7,17 @@
             <h3>Login to our site</h3>
             <p>Enter your username and password to log on:</p>
           </div>
-        </div>
-        <div class="form-bottom">
-          <div class="form-group">
-            <label class="sr-only" for="form-username">Username</label>
-            <input
-              type="text"
-              name="form-username"
-              placeholder="Username..."
-              class="form-username form-control"
-              id="form-username"
-            />
-          </div>
-          <div class="form-group">
-            <label class="sr-only" for="form-password">Password</label>
-            <input
+          <div class="inputBox">
+            <el-input placeholder="请输入用户名" class="elinput" v-model="username" clearable></el-input>
+            <el-input
+              placeholder="请输入密码"
+              class="elinput"
               type="password"
-              name="form-password"
-              placeholder="Password..."
-              class="form-password form-control"
-              id="form-password"
-            />
+              v-model="password"
+              clearable
+            ></el-input>
+            <el-button type="primary" class="loginBtn">LOGIN</el-button>
           </div>
-          <button type="submit" class="btn">Sign in!</button>
         </div>
       </div>
     </div>
@@ -38,7 +26,7 @@
 <script>
 export default {
   data() {
-    return {};
+    return { username: "", password: "" };
   }
 };
 </script>
@@ -81,26 +69,18 @@ p {
   color: #888;
   line-height: 30px;
 }
-.form-bottom {
-  padding: 25px 25px 30px 25px;
-  background: #eee;
-  -moz-border-radius: 0 0 4px 4px;
-  -webkit-border-radius: 0 0 4px 4px;
-  border-radius: 0 0 4px 4px;
-  text-align: left;
+.inputBox {
+  height: 235px;
+  width: 100%;
+  float: left;
+  box-sizing: border-box;
+  padding: 20px 15px;
 }
-.form-group {
-  margin-bottom: 25px;
+.elinput {
+  margin: 15px 0;
 }
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+.loginBtn {
+  margin-top: 15px;
+  width: 100%;
 }
-
 </style>

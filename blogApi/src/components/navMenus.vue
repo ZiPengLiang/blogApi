@@ -11,6 +11,15 @@
           <el-menu-item index="addBlog">添加博客</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
+      <el-submenu index="2">
+        <template slot="title">
+          <i class="el-icon-location"></i>
+          <span slot="title">友链管理</span>
+        </template>
+        <el-menu-item-group>
+          <el-menu-item index="links">所有友链</el-menu-item>
+        </el-menu-item-group>
+      </el-submenu>
     </el-menu>
   </div>
 </template>
