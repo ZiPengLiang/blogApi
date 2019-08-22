@@ -6,11 +6,6 @@
 <script>
 export default {
   props: ["data"],
-  watch: {
-    data(value) {
-      this.mdvalue = value;
-    }
-  },
   methods: {
     saveText(value, render) {
       this.mdvalue = value;
@@ -21,7 +16,7 @@ export default {
   },
   data() {
     return {
-      mdvalue: "",
+      mdvalue: this.data ? this.data : "",
       render: ""
     };
   },

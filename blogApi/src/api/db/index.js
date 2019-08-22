@@ -6,7 +6,7 @@
  * 4. 查
  */
 const mongodb = require("mongodb");
-
+let ObjectId = mongodb.ObjectId
 const MongoClient = mongodb.MongoClient;
 
 const database_url = "mongodb://localhost:27017";
@@ -34,7 +34,9 @@ exports.insert = async(colName, data) => {
 
     return res;
 };
-
+exports.objectId = async(data) => {
+    return ObjectId(data)
+};
 exports.delete = async(colName, query) => {
     let { db, client } = await connect();
 

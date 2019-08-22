@@ -6,9 +6,28 @@
         <el-button type="primary" @click="addBlog">提交文章</el-button>
       </div>
       <div class="type">
-        类型：
-        <typeTag ref="Tag" @commitType="getType" />
+        <div class="aType">
+          类型：
+          <typeTag ref="Tag" @commitType="getType" />
+        </div>
+        <div class="bType">
+          分类：
+          <el-select
+            size="small"
+            style="width:150px;"
+            v-model="blog.classification"
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </div>
       </div>
+
       <div class="markdown">
         <mavon-editor class="md" ref="markdown" v-model="blog.mdvalue" @save="saveText" />
       </div>
@@ -33,12 +52,37 @@ export default {
       }
     },
     addBlog() {
+      let that = this;
       let title = this.blog.title.replace(/ /g, "");
       this.$refs.Tag.send();
       this.blog.date = new Date().getTime();
       if (title && this.typeflag) {
         if (this.mdflag) {
-          console.log(this.blog);
+          this.gl_ajax({
+            method: "post",
+            url: "/insertBlog",
+            data: JSON.stringify({
+              data: that.blog
+            }),
+            success(res) {
+              console.log(res);
+              if (res.data.status == 0) {
+                that.$message({
+                  message: "录入成功",
+                  type: "success"
+                });
+                setTimeout(function() {
+                  that.$router.push({
+                    name: "blogMain"
+                  });
+                }, 1000);
+              }
+            },
+            error(err) {
+              console.log(err.message);
+              this.$message.error(err.message);
+            }
+          });
         } else {
           this.$message.error("请保存文章");
         }
@@ -60,12 +104,26 @@ export default {
     return {
       mdflag: false,
       typeflag: false,
+      options: [
+        {
+          label: "知识总结",
+          value: "summary"
+        },
+        {
+          label: "生活牢骚",
+          value: "whining"
+        }
+      ],
       blog: {
         title: "",
         mdvalue: "",
         render: "",
         blogType: [],
-        date: ""
+        date: "",
+        classification: "",
+        toTop: false,
+        watch: 0,
+        comment: 0
       }
     };
   }
@@ -95,6 +153,13 @@ export default {
     .type {
       display: flex;
       align-items: center;
+      width: 100%;
+      .aType,
+      .bType {
+        display: flex;
+        align-items: center;
+        width: 50%;
+      }
     }
   }
 }

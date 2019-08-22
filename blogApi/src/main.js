@@ -7,10 +7,12 @@ import 'element-ui/lib/theme-chalk/index.css'
 import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 import store from './store'
+import { gl_ajax } from './common/server.js'
 Vue.use(mavonEditor);
 Vue.use(ElementUI);
 
 Vue.prototype.axios = axios;
+Vue.prototype.gl_ajax = gl_ajax;
 axios.defaults.headers.post["Content-Type"] = "application/json; charset=UTF-8";
 Vue.config.productionTip = false
 
