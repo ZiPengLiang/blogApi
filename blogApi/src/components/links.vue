@@ -4,14 +4,19 @@
       <div class="linkHeader">
         <el-button style="float:right" @click="addlink" type="primary">添加友链</el-button>
       </div>
-      <table class="dataTable" id="dataTable">
+      <table
+        class="dataTable"
+        v-if="tableData.dataList.length != 0"
+        v-loading="loading"
+        id="dataTable"
+      >
         <thead>
           <th v-for="(item,index) in tableData.itemList" :key="index">{{item.label}}</th>
         </thead>
         <tbody>
           <tr v-for="(item,index) in tableData.dataList" :key="index">
             <td v-for="(v,k) in item" :key="k">
-              <div v-if="k.indexOf('type')==-1">
+              <div v-if="k.indexOf('linkType')==-1">
                 <!-- v-if="k.indexOf('evaluate') == -1" -->
                 <span :class="k.indexOf('evaluate') == -1?'':'evaluate'">{{v}}</span>
               </div>
@@ -20,18 +25,19 @@
               </div>
             </td>
             <td>
-              <button class="edit" @click="changeBlog(item)">编辑</button>
-              <button class="edit" @click="deleteBlog(item)">删除</button>
+              <button class="edit" @click="changeLink(index)">编辑</button>
+              <button class="edit" @click="deleteLink(index)">删除</button>
             </td>
           </tr>
         </tbody>
       </table>
+      <div class="nomessage" v-else>暂无信息，请添加链接</div>
     </div>
     <el-dialog title="编辑友链" :visible.sync="changeLinksViable" class="blogDialog">
       <div class="data">
         <div class="dtitle">
           <span>博主：</span>
-          <el-input class="dInput" placeholder="请输入内容" v-model="cBlog.title" clearable></el-input>
+          <el-input class="dInput" placeholder="请输入内容" v-model="cBlog.blogname" clearable></el-input>
         </div>
         <div class="dtype">
           <div>类型：</div>
@@ -39,21 +45,21 @@
             <el-tag
               :key="tag"
               class="typeTag"
-              v-for="tag in cBlog.dynamicTags"
+              v-for="tag in cBlog.linkType"
               closable
               :disable-transitions="false"
-              @close="handleClose(tag)"
+              @close="handleClose('cBlog',tag)"
             >{{tag}}</el-tag>
             <el-input
               class="input-new-tag"
-              v-if="cBlog.inputVisible"
-              v-model="cBlog.inputValue"
+              v-if="inputVisible"
+              v-model="inputValue"
               ref="saveTagInput"
               size="small"
-              @keyup.enter.native="handleChangeInput"
-              @blur="handleChangeInput"
+              @keyup.enter.native="handleInput('cBlog')"
+              @blur="handleInput('cBlog')"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showCInput">+ New Tag</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
           </div>
         </div>
         <div class="dtitle">
@@ -64,17 +70,21 @@
           <span>网址：</span>
           <el-input class="dInput" placeholder="请输入网址" v-model="cBlog.url" clearable></el-input>
         </div>
+        <div class="dtitle">
+          <span>头像地址：</span>
+          <el-input class="dInput" placeholder="请输入网址" v-model="cBlog.imgurl" clearable></el-input>
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="changeLinksViable = false">取消</el-button>
-        <el-button class="btnColor" type="primary" @click="commitTenant('TenantForm')">确定编辑</el-button>
+        <el-button class="btnColor" type="primary" @click="commitchange">确定编辑</el-button>
       </span>
     </el-dialog>
-    <el-dialog title="添加友链" :visible.sync="addLinksViable" class="blogDialog">
+    <el-dialog title="添加友链" v-loading="loading" :visible.sync="addLinksViable" class="blogDialog">
       <div class="data">
         <div class="dtitle">
           <span>博主：</span>
-          <el-input class="dInput" placeholder="请输入内容" v-model="aLinks.title" clearable></el-input>
+          <el-input class="dInput" placeholder="请输入内容" v-model="aLinks.blogname" clearable></el-input>
         </div>
         <div class="dtype">
           <div>类型：</div>
@@ -82,21 +92,21 @@
             <el-tag
               :key="tag"
               class="typeTag"
-              v-for="tag in aLinks.dynamicTags"
+              v-for="tag in aLinks.linkType"
               closable
               :disable-transitions="false"
-              @close="handleClose(tag)"
+              @close="handleClose('aLinks',tag)"
             >{{tag}}</el-tag>
             <el-input
               class="input-new-tag"
-              v-if="aLinks.inputVisible"
-              v-model="aLinks.inputValue"
+              v-if="inputVisible"
+              v-model="inputValue"
               ref="saveTagInput"
               size="small"
-              @keyup.enter.native="handleAddInput"
-              @blur="handleAddInput"
+              @keyup.enter.native="handleInput('aLinks')"
+              @blur="handleInput('aLinks')"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showAddInput">+ New Tag</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
           </div>
         </div>
         <div class="dtitle">
@@ -107,72 +117,255 @@
           <span>网址：</span>
           <el-input class="dInput" placeholder="请输入网址" v-model="aLinks.url" clearable></el-input>
         </div>
+        <div class="dtitle">
+          <span>头像地址：</span>
+          <el-input class="dInput" placeholder="请输入网址" v-model="aLinks.imgurl" clearable></el-input>
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addLinksViable = false">取消</el-button>
-        <el-button class="btnColor" type="primary" @click="commitTenant('TenantForm')">确定编辑</el-button>
+        <el-button class="btnColor" type="primary" @click="commitLink">确定编辑</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import markdown from "./markdown";
 export default {
-  components: { markdown },
   methods: {
-    //添加博客
+    //添加链接
     addlink() {
       this.addLinksViable = true;
     },
-    changeBlog(item) {
+    // 提交添加链接
+    commitLink() {
+      let { blogname, linkType, evaluate, url, imgurl } = this.aLinks;
+      let t = blogname.replace(/ /g, "");
+      let e = evaluate.replace(/ /g, "");
+      let u = url.replace(/ /g, "");
+      let that = this;
+      if (t && e && u) {
+        this.loading = true;
+        this.gl_ajax({
+          method: "post",
+          url: "/insert",
+          data: JSON.stringify({
+            library: "friendlink",
+            data: {
+              blogname: t,
+              evaluate: e,
+              url: u,
+              linkType,
+              imgurl,
+              date: new Date().getTime()
+            }
+          }),
+          success(res) {
+            console.log(res);
+            that.loading = false;
+            if (res.data.status == 0) {
+              that.$message({
+                message: "录入成功",
+                type: "success"
+              });
+              setTimeout(function() {
+                that.addLinksViable = false;
+                that.getLinks();
+              }, 1000);
+            } else {
+              that.$message({
+                message: "录入失败",
+                type: "warning"
+              });
+            }
+          },
+          error(err) {
+            this.loading = false;
+            console.log(err);
+          }
+        });
+      }
+    },
+    //提交修改
+    commitchange() {
+      let that = this;
+      let data = {
+        blogname: that.cBlog.blogname,
+        date: new Date().getTime(),
+        evaluate: that.cBlog.evaluate,
+        linkType: that.cBlog.linkType,
+        url: that.cBlog.url,
+        imgurl: that.cBlog.imgurl
+      };
+      this.setlink({
+        _id: that.cBlog._id,
+        data
+      }).then(res => {
+        if (res.data.status == 0) {
+          that.$message({
+            message: "修改成功",
+            type: "success"
+          });
+          setTimeout(function() {
+            that.changeLinksViable = false;
+          }, 1000);
+        } else {
+          that.$message({
+            message: "修改失败",
+            type: "warning"
+          });
+        }
+        that.getLinks();
+      });
+    },
+    //修改link
+    setlink(bdata) {
+      let that = this;
+      this.loading = true;
+      let { _id, data } = bdata;
+      return new Promise((resolve, rejuct) => {
+        that.gl_ajax({
+          method: "post",
+          url: "/updata",
+          data: JSON.stringify({
+            library: "friendlink",
+            _id,
+            data
+          }),
+          success: function(res) {
+            that.loading = false;
+            resolve(res);
+          },
+          error: function(err) {
+            that.loading = false;
+            rejuct(err);
+            console.log("err", err);
+          }
+        });
+      });
+    },
+    // 初始化时间
+    timeFormat(time) {
+      //传入时间戳
+      let date = new Date(time);
+      let year = date.getFullYear();
+      let month =
+        date.getMonth() + 1 >= 10
+          ? date.getMonth() + 1
+          : "0" + (date.getMonth() + 1);
+      let day = date.getDate() >= 10 ? date.getDate() : "0" + date.getDate();
+      return year + "-" + month + "-" + day;
+    },
+    changeLink(index) {
       this.changeLinksViable = true;
-      console.log(item);
+      this.cBlog = this.allLink[index];
     },
-    checkBlog(item) {
-      console.log(item);
+    deleteLink(index) {
+      let that = this;
+      this.$confirm("是否删除该友链，删除后无法恢复", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(actions => {
+        if (actions == "confirm") {
+          that.loading = true;
+          that.gl_ajax({
+            method: "post",
+            url: "/delete",
+            data: JSON.stringify({
+              library: "friendlink",
+              _id: that.allLink[index]._id
+            }),
+            success(res) {
+              that.loading = false;
+              if (res.data.status == 0) {
+                that.$message({
+                  message: "删除成功",
+                  type: "success"
+                });
+                that.getLinks();
+              } else {
+                that.$message({
+                  message: "删除失败",
+                  type: "warning"
+                });
+              }
+            },
+            error(err) {
+              that.loading = false;
+              console.log("delete:" + err);
+            }
+          });
+        }
+      });
     },
-    deleteBlog(item) {
-      console.log(item);
-    },
-    handleClose(tag) {
-      this.cBlog.dynamicTags.splice(this.cBlog.dynamicTags.indexOf(tag), 1);
+    handleClose(link, tag) {
+      this[link].linkType.splice(this[link].linkType.indexOf(tag), 1);
     },
 
-    showCInput() {
-      this.cBlog.inputVisible = true;
+    showInput() {
+      this.inputVisible = true;
       this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
-    showAddInput() {
-      this.aLinks.inputVisible = true;
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
+    handleInput(link) {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        this[link].linkType.push(inputValue);
+      }
+      this.inputVisible = false;
+      this.inputValue = "";
     },
+    getLinks() {
+      let that = this;
+      this.loading = true;
+      this.gl_ajax({
+        method: "get",
+        url: "/getData",
+        data: {
+          pageno: 1,
+          pagesize: 10,
+          library: "friendlink",
+          data: {}
+        },
+        success(res) {
+          that.loading = false;
+          if (res.data.status == 0) {
+            let data = res.data;
+            let link = data.data;
+            that.allLink = link;
+            that.tableData.dataList = [];
+            link.forEach(item => {
+              let object = {};
+              object["date"] = that.timeFormat(item.date);
+              object["blogname"] = item.blogname;
 
-    handleChangeInput() {
-      let inputValue = this.cBlog.inputValue;
-      if (inputValue) {
-        this.cBlog.dynamicTags.push(inputValue);
-      }
-      this.cBlog.inputVisible = false;
-      this.cBlog.inputValue = "";
-    },
-    handleAddInput() {
-      let inputValue = this.aLinks.inputValue;
-      if (inputValue) {
-        this.aLinks.dynamicTags.push(inputValue);
-      }
-      this.aLinks.inputVisible = false;
-      this.aLinks.inputValue = "";
+              object["linkType"] = item.linkType;
+              object["evaluate"] = item.evaluate;
+              object["url"] = item.url;
+              that.tableData.dataList.push(object);
+            });
+          }
+        },
+        error(err) {
+          this.loading = false;
+          console.log(err);
+        }
+      });
     }
+  },
+  mounted() {
+    this.getLinks();
   },
   data() {
     return {
+      loading: false,
       addLinksViable: false,
       changeLinksViable: false,
+      inputVisible: false,
+      inputValue: "",
+      allLink: [],
       tableData: {
         ifButton: true,
         itemList: [
@@ -195,53 +388,21 @@ export default {
             label: "操作"
           }
         ],
-        dataList: [
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            evaluate:
-              "度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌度娘无敌",
-            url: "www.baidu.com"
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            evaluate: "度娘无敌",
-            url: "www.baidu.com"
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            evaluate: "度娘无敌",
-            url: "www.baidu.com"
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            evaluate: "度娘无敌",
-            url: "www.baidu.com"
-          }
-        ]
+        dataList: []
       },
       cBlog: {
-        title: "",
-        dynamicTags: ["标签一", "标签二", "标签三"],
-        inputValue: "",
-        inputVisible: false,
+        blogname: "",
+        linkType: [],
         url: "",
-        evaluate: ""
+        evaluate: "",
+        imgurl: ""
       },
       aLinks: {
-        title: "",
-        dynamicTags: ["标签一", "标签二", "标签三"],
-        inputValue: "",
-        inputVisible: false,
+        blogname: "",
+        linkType: [],
         url: "",
-        evaluate: ""
+        evaluate: "",
+        imgurl: ""
       }
     };
   }

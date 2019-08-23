@@ -1,6 +1,6 @@
 <template>
   <div class="blogMain">
-    <div class="datalists">
+    <div class="datalists" v-if="tableData.dataList.length!=0">
       <table class="dataTable" v-loading="loading" id="dataTable">
         <thead>
           <th v-for="(item,index) in tableData.itemList" :key="index">{{item.label}}</th>
@@ -30,13 +30,26 @@
           </tr>
         </tbody>
       </table>
+      <div class="paging">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="selectData.pageno"
+          :page-sizes="[10, 20]"
+          :page-size="selectData.pagesize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="current"
+        ></el-pagination>
+      </div>
     </div>
+    <div class="nomessage" v-else>暂无信息，请添加博客</div>
     <el-dialog title="编辑博客" v-loading="loading" :visible.sync="changeBlogViable" class="blogDialog">
       <div class="data">
         <div class="dtitle">
           <el-input placeholder="请输入内容" v-model="cBlog.title" clearable></el-input>
         </div>
         <div class="dtype">
+          <!-- 文章分类 -->
           <div>
             <el-tag
               :key="tag"
@@ -57,6 +70,19 @@
             ></el-input>
             <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
           </div>
+          <!-- 录入图片 -->
+          <div style="display:flex">
+            <el-button type="primary" @click="uploadImg">上传图片</el-button>
+            <img class="s_img" :src="cBlog.base64" alt="点击上传图片" />
+            <input
+              style="display: none;"
+              type="file"
+              accept="image/*"
+              ref="BlogImg"
+              @change="selectFileImage($event)"
+            />
+          </div>
+          <!-- 分类 -->
           <div>
             <el-select
               size="small"
@@ -116,15 +142,17 @@
 <script>
 export default {
   methods: {
+    //修改博客
     changeBlog(index) {
       this.changeBlogViable = true;
       this.cBlog = this.allBlog[index];
     },
+    //查看博客
     checkBlog(index) {
-      console.log(this.allBlog[index]);
       this.checkBlogViable = true;
       this.cBlog = this.allBlog[index];
     },
+    //删除博客
     deleteBlog(index) {
       let that = this;
       this.$confirm("是否删除该文章，删除后无法恢复", "提示", {
@@ -136,8 +164,9 @@ export default {
           that.loading = true;
           that.gl_ajax({
             method: "post",
-            url: "/deleteBlog",
+            url: "/delete",
             data: JSON.stringify({
+              library: "blog",
               _id: that.allBlog[index]._id
             }),
             success(res) {
@@ -172,17 +201,19 @@ export default {
       let that = this;
       this.loading = true;
       this.gl_ajax({
-        url: "/blog",
+        url: "/getData",
         method: "get",
         data: {
-          page: 1,
-          limit: 10
+          pageno: that.selectData.pageno,
+          pagesize: that.selectData.pagesize,
+          data: {},
+          library: "blog"
         },
         success(res) {
-          console.log(res);
           if (res.data.status == 0) {
             let data = res.data;
             that.allBlog = data.data;
+            this.current = data.count;
             let bdata = data.data;
             that.tableData.dataList = [];
             bdata.forEach(item => {
@@ -274,7 +305,6 @@ export default {
     //提交修改
     commitBlog() {
       let that = this;
-      console.log("change", this.cBlog);
       if (this.mdflag) {
         let cblog = this.cBlog;
         let data = {
@@ -283,7 +313,8 @@ export default {
           date: new Date().getTime(),
           mdvalue: cblog.mdvalue,
           render: cblog.render,
-          title: cblog.title
+          title: cblog.title,
+          base64: cblog.base64
         };
         that
           .setBlog({
@@ -321,8 +352,9 @@ export default {
       return new Promise((resolve, rejuct) => {
         that.gl_ajax({
           method: "post",
-          url: "/updataBlog",
+          url: "/updata",
           data: JSON.stringify({
+            library: "blog",
             _id,
             data
           }),
@@ -348,6 +380,37 @@ export default {
       } else {
         this.mdflag = false;
       }
+    },
+    // 上传图片
+    selectFileImage(event) {
+      let imgData = event.target.files[0];
+      this.imageToBase64(imgData);
+    },
+    //触发上传
+    uploadImg() {
+      this.$refs.BlogImg.click();
+    },
+    //将图片转成base64位
+    imageToBase64(file) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // console.log("file 转 base64结果：" + reader.result);
+        this.cBlog.base64 = reader.result;
+      };
+      reader.onerror = function(error) {
+        console.log("Error: ", error);
+      };
+    },
+    // 页数修改
+    handleSizeChange(val) {
+      this.selectData.pagesize = val;
+      this.getBlog();
+    },
+    //页码修改
+    handleCurrentChange(val) {
+      this.selectData.pageno = val;
+      this.getBlog();
     }
   },
   mounted() {
@@ -355,6 +418,12 @@ export default {
   },
   data() {
     return {
+      selectData: {
+        pageno: 1,
+        pagesize: 10
+      },
+      // 所有博客数
+      current: 1,
       //判断是否保存了
       mdflag: false,
       options: [
@@ -399,40 +468,7 @@ export default {
             label: "操作"
           }
         ],
-        dataList: [
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: true
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: true
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: false
-          },
-          {
-            date: "2016-05-02",
-            title: "javascript基础",
-            type: ["javascript", "html"],
-            watch: "200",
-            comment: "100",
-            top: false
-          }
-        ]
+        dataList: []
       },
       inputValue: "",
       cBlog: {
@@ -617,5 +653,14 @@ button.cancel {
       background: #f7f7f7;
     }
   }
+}
+.s_img {
+  width: 50px;
+  height: 50px;
+  margin-left: 15px;
+}
+
+.paging {
+  margin-top: 20px;
 }
 </style>

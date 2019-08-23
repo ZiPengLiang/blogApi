@@ -17,12 +17,12 @@ axios.defaults.headers.post["Content-Type"] = "application/json; charset=UTF-8";
 Vue.config.productionTip = false
 
 router.beforeEach((to, from, next) => {
-    if (to.path == '/login') {
-        console.log('666')
-        store.commit('changeLoginStatus', false);
+    if (to.path == '/login' || to.path == '/') {
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('token');
         next()
     } else {
-        store.commit('changeLoginStatus', true);
+
         next()
     }
 })

@@ -1,23 +1,33 @@
 <template>
   <div id="app">
-    <header>
-      <blog-header v-if="notLogin" />
-    </header>
-    <div class="main">
-      <navMenus v-if="notLogin" />
-      <transition>
-        <router-view class="router" />
-      </transition>
-    </div>
+    <!-- <header>
+      <blog-header v-if="show" />
+    </header>-->
+    <!-- <div class="main">
+    <navMenus v-if="show" />-->
+    <transition>
+      <router-view class="router" />
+    </transition>
+    <!-- </div> -->
   </div>
 </template>
 
 <script>
 export default {
   name: "App",
+  // computed: {
+  //   listen_outLogin() {
+  //     return this.$store.state.notLogin;
+  //   }
+  // },
+  // watch: {
+  //   listen_outLogin: function(n, o) {
+  //     this.show = n;
+  //   }
+  // },
   data() {
     return {
-      notLogin: this.$store.state.notLogin
+      show: true
     };
   },
   components: {
@@ -54,13 +64,5 @@ button {
 a {
   text-decoration: none;
 }
-.main {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-.router {
-  flex: 1;
-}
+
 </style>

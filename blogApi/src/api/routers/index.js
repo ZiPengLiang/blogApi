@@ -6,10 +6,11 @@ const koaBody = require("koa-body");
 var router = new Router();
 
 // 引入页面路由
-const allblogRouter = require("./blog"); //获取所有博客
-const insertBlogRouter = require("./insertBlog"); //录入博客
-const updataBlogRouter = require("./updataBlog"); //更新博客
-const deleteBlogRouter = require("./deleteBlog"); //删除博客
+const insertRouter = require("./insertData"); //录入博客或链接
+const updataRouter = require("./updata"); //更新博客或链接
+const deleteRouter = require("./delete"); //删除博客或链接
+const getDataRouter = require("./getData"); //获取博客、链接
+const loginRouter = require('./login'); //登陆
 router.use(
     koaBody({
         // 支持formdata
@@ -37,8 +38,9 @@ router.all(" * ", function(req, res, next) {
     if (req.method == "OPTIONS") res.send(200);
     else next();
 });
-router.use("/blog", allblogRouter.routes());
-router.use('/insertBlog', insertBlogRouter.routes())
-router.use('/updataBlog', updataBlogRouter.routes())
-router.use('/deleteBlog', deleteBlogRouter.routes())
+router.use('/insert', insertRouter.routes())
+router.use('/updata', updataRouter.routes())
+router.use('/delete', deleteRouter.routes())
+router.use('/getData', getDataRouter.routes())
+router.use('/login', loginRouter.routes())
 module.exports = router;

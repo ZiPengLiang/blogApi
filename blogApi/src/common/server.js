@@ -8,13 +8,18 @@ export const gl_ajax = requestData => {
             url: base + requestData.url,
             // url: requestData.url,
             headers: {
-                // 'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                'Authorization': 'Bearer ' + sessionStorage.getItem('token')
             },
             data: requestData.method != "get" ? requestData.data : "",
             params: requestData.method == "get" ? requestData.data : ""
         })
         .then(res => {
             requestData.success ? requestData.success(res) : "";
+            if (res.data.status == 500) {
+                this.$router.push({
+                    name: 'login'
+                })
+            }
         })
         .catch(err => {
             console.log(err)

@@ -16,7 +16,7 @@
               v-model="password"
               clearable
             ></el-input>
-            <el-button type="primary" class="loginBtn">LOGIN</el-button>
+            <el-button type="primary" class="loginBtn" @click="login">LOGIN</el-button>
           </div>
         </div>
       </div>
@@ -27,6 +27,49 @@
 export default {
   data() {
     return { username: "", password: "" };
+  },
+
+  methods: {
+    login() {
+      let that = this;
+      let username = this.username.replace(/ /g, "");
+      let password = this.password.replace(/ /g, "");
+      if (username && password) {
+        this.gl_ajax({
+          method: "post",
+          url: "/login",
+          data: JSON.stringify({
+            username,
+            password
+          }),
+          success(res) {
+            if (res.data.status == 0) {
+              that.$message({
+                message: "登陆成功",
+                type: "success"
+              });
+              sessionStorage.setItem("token", res.data.data.token);
+              sessionStorage.setItem("username", res.data.data.username);
+              that.$store.commit("changeLoginStatus", true);
+
+              setTimeout(function() {
+                that.$router.push({
+                  name: "home"
+                });
+              }, 1000);
+            } else {
+              that.$message({
+                message: "登陆失败",
+                type: "warning"
+              });
+            }
+          },
+          error(err) {
+            console.log(err);
+          }
+        });
+      }
+    }
   }
 };
 </script>
