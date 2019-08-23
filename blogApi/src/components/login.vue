@@ -54,7 +54,7 @@ export default {
 
               setTimeout(function() {
                 that.$router.push({
-                  name: "home"
+                  name: "blogMain"
                 });
               }, 1000);
             } else {

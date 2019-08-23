@@ -20,11 +20,7 @@ export default new Router({
             path: '/home',
             name: 'home',
             component: resolve => require(['@/components/home'], resolve),
-            children: [{
-                    path: '/home',
-                    name: 'blogMain',
-                    component: resolve => require(['@/components/b_index'], resolve)
-                }, {
+            children: [, {
                     path: '/blogMain',
                     name: 'blogMain',
                     component: resolve => require(['@/components/b_index'], resolve)
