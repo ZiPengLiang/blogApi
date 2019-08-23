@@ -12,7 +12,13 @@ const { verify } = require("../utils/token.js");
 router.get("/", async(ctx, next) => {
     let { library, pageno, pagesize, data } = ctx.request.query;
     let token = ctx.request.header.authorization.split(' ')[1];
-    let checkToken = verify(token);
+    let checkToken = ''
+    if (token) {
+        checkToken = verify(token);
+    } else {
+        checkToken = true
+    }
+
     let resdata = {}
     if (checkToken) {
         let start = (pageno - 1) * pagesize;
