@@ -21,7 +21,7 @@
                 <span :class="k.indexOf('evaluate') == -1?'':'evaluate'">{{v}}</span>
               </div>
               <div v-else>
-                <el-tag class="typeTag" v-for="(t,i) in v" :key="i">{{t}}</el-tag>
+                <el-tag class="typeTag">{{v =='fLinks'?'友情链接':'我的链接'}}</el-tag>
               </div>
             </td>
             <td>
@@ -42,7 +42,7 @@
         <div class="dtype">
           <div>类型：</div>
           <div>
-            <el-tag
+            <!-- <el-tag
               :key="tag"
               class="typeTag"
               v-for="tag in cBlog.linkType"
@@ -59,7 +59,15 @@
               @keyup.enter.native="handleInput('cBlog')"
               @blur="handleInput('cBlog')"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>-->
+            <el-select size="small" style="width:150px;" v-model="cBlog.linkType" placeholder="请选择">
+              <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
           </div>
         </div>
         <div class="dtitle">
@@ -81,7 +89,7 @@
       </span>
     </el-dialog>
     <el-dialog title="添加友链" v-loading="loading" :visible.sync="addLinksViable" class="blogDialog">
-      <div class="data">
+      <div class="data" ref="addLinks">
         <div class="dtitle">
           <span>博主：</span>
           <el-input class="dInput" placeholder="请输入内容" v-model="aLinks.blogname" clearable></el-input>
@@ -89,7 +97,7 @@
         <div class="dtype">
           <div>类型：</div>
           <div>
-            <el-tag
+            <!-- <el-tag
               :key="tag"
               class="typeTag"
               v-for="tag in aLinks.linkType"
@@ -106,7 +114,20 @@
               @keyup.enter.native="handleInput('aLinks')"
               @blur="handleInput('aLinks')"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>-->
+            <el-select
+              size="small"
+              style="width:150px;"
+              v-model="aLinks.linkType"
+              placeholder="请选择"
+            >
+              <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
           </div>
         </div>
         <div class="dtitle">
@@ -161,13 +182,15 @@ export default {
             }
           }),
           success(res) {
-            console.log(res);
             that.loading = false;
             if (res.data.status == 0) {
               that.$message({
                 message: "录入成功",
                 type: "success"
               });
+              for (let key in that.aLinks) {
+                that.aLinks[key] = "";
+              }
               setTimeout(function() {
                 that.addLinksViable = false;
                 that.getLinks();
@@ -403,7 +426,17 @@ export default {
         url: "",
         evaluate: "",
         imgurl: ""
-      }
+      },
+      options: [
+        {
+          label: "友情链接",
+          value: "fLinks"
+        },
+        {
+          label: "我的链接",
+          value: "mLinks"
+        }
+      ]
     };
   }
 };

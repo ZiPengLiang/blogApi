@@ -1,30 +1,14 @@
 <template>
   <div id="app">
-    <!-- <header>
-      <blog-header v-if="show" />
-    </header>-->
-    <!-- <div class="main">
-    <navMenus v-if="show" />-->
     <transition>
-      <router-view class="router" />
+      <router-view />
     </transition>
-    <!-- </div> -->
   </div>
 </template>
 
 <script>
 export default {
   name: "App",
-  // computed: {
-  //   listen_outLogin() {
-  //     return this.$store.state.notLogin;
-  //   }
-  // },
-  // watch: {
-  //   listen_outLogin: function(n, o) {
-  //     this.show = n;
-  //   }
-  // },
   data() {
     return {
       show: true
@@ -64,5 +48,4 @@ button {
 a {
   text-decoration: none;
 }
-
 </style>

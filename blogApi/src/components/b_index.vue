@@ -73,7 +73,7 @@
           <!-- 录入图片 -->
           <div style="display:flex">
             <el-button type="primary" @click="uploadImg">上传图片</el-button>
-            <img class="s_img" :src="cBlog.base64" alt="点击上传图片" />
+            <img class="s_img" :src="base+'/'+cBlog.base64" alt="点击上传图片" />
             <input
               style="display: none;"
               type="file"
@@ -100,7 +100,14 @@
           </div>
         </div>
         <div class="dBox">
-          <mavon-editor class="md" ref="markdown" v-model="cBlog.mdvalue" @save="saveText" />
+          <mavon-editor
+            class="md"
+            ref="markdown"
+            @imgAdd="$imgAdd"
+            @imgDel="$imgDel"
+            v-model="cBlog.mdvalue"
+            @save="saveText"
+          />
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -140,6 +147,7 @@
 </template>
 
 <script>
+import { base } from "../common/server";
 export default {
   methods: {
     //修改博客
@@ -213,7 +221,7 @@ export default {
           if (res.data.status == 0) {
             let data = res.data;
             that.allBlog = data.data;
-            this.current = data.count;
+            that.current = data.count;
             let bdata = data.data;
             that.tableData.dataList = [];
             bdata.forEach(item => {
@@ -382,25 +390,62 @@ export default {
       }
     },
     // 上传图片
-    selectFileImage(event) {
-      let imgData = event.target.files[0];
-      this.imageToBase64(imgData);
+    selectFileImage(e) {
+      let files = e.target.files || e.dataTransfer.files;
+      let id = e.target.id;
+      if (!files.length) return;
+      let picavalue = files[0];
+      if (picavalue.size / 1024 > 10240) {
+        that.$message({
+          message: "图片过大",
+          type: "warning"
+        });
+      } else {
+        this.imageToBase64(picavalue, id);
+      }
     },
     //触发上传
     uploadImg() {
       this.$refs.BlogImg.click();
     },
     //将图片转成base64位
-    imageToBase64(file) {
-      var reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        // console.log("file 转 base64结果：" + reader.result);
-        this.cBlog.base64 = reader.result;
-      };
-      reader.onerror = function(error) {
-        console.log("Error: ", error);
-      };
+    imageToBase64(file, id) {
+      let self = this;
+      //判断支不支持FileReader
+      if (!file || !window.FileReader) return false;
+      if (/^image/.test(file.type)) {
+        //创建一个reader
+        let reader = new FileReader();
+        //将图片转成base64格式
+        reader.readAsDataURL(file);
+        //读取成功后的回调
+        reader.onloadend = function() {
+          let result = this.result;
+          let img = new Image();
+          img.src = result;
+          img.onload = function() {
+            let data = self.compress(img, 0.3);
+            self.cBlog.base64 = data;
+          };
+        };
+      }
+    },
+    // 图片压缩
+    compress(img, size) {
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+      let initSize = img.src.length;
+      let width = img.width;
+      let height = img.height;
+      canvas.width = width;
+      canvas.height = height;
+      // 铺底色
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, width, height);
+      //进行最小压缩
+      let ndata = canvas.toDataURL("image/jpeg", size);
+      return ndata;
     },
     // 页数修改
     handleSizeChange(val) {
@@ -411,13 +456,43 @@ export default {
     handleCurrentChange(val) {
       this.selectData.pageno = val;
       this.getBlog();
+    },
+    $imgAdd(pos, $file) {
+      let that = this;
+      this.gl_ajax({
+        method: "post",
+        url: "/setPic",
+        data: JSON.stringify({
+          data: $file.miniurl
+        }),
+        success(res) {
+          if (res.data.status == 0) {
+            let url = that.base + "/" + res.data.data.imgurl;
+            that.$refs.markdown.$img2Url(pos, url);
+          }
+        }
+      });
+    },
+    $imgDel(pos) {
+      let imgName = pos[0].split("image/")[1];
+      let that = this;
+      this.gl_ajax({
+        method: "post",
+        url: "/deletepic",
+        data: JSON.stringify({
+          data: imgName
+        }),
+        success(res) {}
+      });
     }
   },
   mounted() {
+    this.base = base;
     this.getBlog();
   },
   data() {
     return {
+      base: "",
       selectData: {
         pageno: 1,
         pagesize: 10

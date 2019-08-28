@@ -11,6 +11,9 @@ const updataRouter = require("./updata"); //更新博客或链接
 const deleteRouter = require("./delete"); //删除博客或链接
 const getDataRouter = require("./getData"); //获取博客、链接
 const loginRouter = require('./login'); //登陆
+const getByIDRouter = require('./getByID'); //通过Id查找
+const setPicRouter = require('./setPic'); //通过设置图片
+const deletepicRouter = require('./deletepic'); //删除图片
 router.use(
     koaBody({
         // 支持formdata
@@ -33,6 +36,10 @@ router.all(" * ", function(req, res, next) {
         "Access-Control-Allow-Headers",
         "Content-Type,Content-Length,Authorization,Accept,X-Requested-With"
     );
+	res.header(
+        "Cache-Control",
+        "private"
+    );
     res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
     res.header("X-Powered-By", "3.2.1");
     if (req.method == "OPTIONS") res.send(200);
@@ -43,4 +50,7 @@ router.use('/updata', updataRouter.routes())
 router.use('/delete', deleteRouter.routes())
 router.use('/getData', getDataRouter.routes())
 router.use('/login', loginRouter.routes())
+router.use('/getByID', getByIDRouter.routes())
+router.use('/setPic', setPicRouter.routes())
+router.use('/deletepic', deletepicRouter.routes())
 module.exports = router;

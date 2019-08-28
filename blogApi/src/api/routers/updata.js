@@ -4,14 +4,12 @@ const db = require("../db");
 let { objectId } = db;
 // 创建路由
 var router = new Router();
-const { verify } = require("../utils/token.js");
 router.post("/", async(ctx, next) => {
     // 解构
     // console.log("666");
-    let token = ctx.request.header.authorization.split(' ')[1];
-    let checkToken = verify(token);
+ 
     let resData = {}
-    if (checkToken) {
+   
         let { library, _id, data } = ctx.request.body;
         //   console.log(username, userdata);
         var ObjectID = require("mongodb").ObjectID;
@@ -30,12 +28,7 @@ router.post("/", async(ctx, next) => {
                 message: '修改失败'
             }
         }
-    } else {
-        resData = {
-            status: 500,
-            message: 'token过期'
-        }
-    }
+ 
 
     ctx.body = resData;
     // 存入数据库

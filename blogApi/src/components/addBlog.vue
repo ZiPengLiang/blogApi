@@ -43,18 +43,29 @@
       </div>
 
       <div class="markdown">
-        <mavon-editor class="md" ref="markdown" v-model="blog.mdvalue" @save="saveText" />
+        <mavon-editor
+          class="md"
+          ref="markdown"
+          @imgAdd="$imgAdd"
+          @imgDel="$imgDel"
+          v-model="blog.mdvalue"
+          @save="saveText"
+        />
       </div>
     </div>
   </div>
 </template>
 <script>
+import { base } from "../common/server";
 import markdown from "./markdown";
 import typeTag from "./typeTag";
 export default {
   components: {
     markdown,
     typeTag
+  },
+  mounted() {
+    this.base = base;
   },
   methods: {
     getType(data) {
@@ -118,29 +129,94 @@ export default {
         this.mdflag = false;
       }
     },
-    selectFileImage(event) {
-      let imgData = event.target.files[0];
-      this.imageToBase64(imgData);
+    selectFileImage(e) {
+      let files = e.target.files || e.dataTransfer.files;
+      let id = e.target.id;
+      if (!files.length) return;
+      let picavalue = files[0];
+      if (picavalue.size / 1024 > 10240) {
+        that.$message({
+          message: "图片过大",
+          type: "warning"
+        });
+      } else {
+        this.imageToBase64(picavalue, id);
+      }
     },
     uploadImg() {
       this.$refs.BlogImg.click();
     },
 
-    imageToBase64(file) {
-      var reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        // console.log("file 转 base64结果：" + reader.result);
-        this.iconBase64 = reader.result;
-        this.blog.base64 = reader.result;
-      };
-      reader.onerror = function(error) {
-        console.log("Error: ", error);
-      };
+    imageToBase64(file, id) {
+      let self = this;
+      //判断支不支持FileReader
+      if (!file || !window.FileReader) return false;
+      if (/^image/.test(file.type)) {
+        //创建一个reader
+        let reader = new FileReader();
+        //将图片转成base64格式
+        reader.readAsDataURL(file);
+        //读取成功后的回调
+        reader.onloadend = function() {
+          let result = this.result;
+          let img = new Image();
+          img.src = result;
+          img.onload = function() {
+            let data = self.compress(img, 0.3);
+            self.blog.base64 = data;
+            self.iconBase64 = data;
+          };
+        };
+      }
+    },
+    compress(img, size) {
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+      // let initSize = img.src.length ? img.src.length : img.length;
+      let width = img.width;
+      let height = img.height;
+      canvas.width = width;
+      canvas.height = height;
+      // 铺底色
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, width, height);
+      //进行最小压缩
+      let ndata = canvas.toDataURL("image/jpeg", size);
+      return ndata;
+    },
+    $imgAdd(pos, $file) {
+      let that = this;
+      this.gl_ajax({
+        method: "post",
+        url: "/setPic",
+        data: JSON.stringify({
+          data: $file.miniurl
+        }),
+        success(res) {
+          if (res.data.status == 0) {
+            let url = that.base + "/" + res.data.data.imgurl;
+            that.$refs.markdown.$img2Url(pos, url);
+          }
+        }
+      });
+    },
+    $imgDel(pos) {
+      let imgName = pos[0].split("image/")[1];
+      let that = this;
+      this.gl_ajax({
+        method: "post",
+        url: "/deletepic",
+        data: JSON.stringify({
+          data: imgName
+        }),
+        success(res) {}
+      });
     }
   },
   data() {
     return {
+      base: "",
       mdflag: false,
       typeflag: false,
       iconBase64: "",
