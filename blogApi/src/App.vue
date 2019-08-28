@@ -17,7 +17,19 @@ export default {
   components: {
     blogHeader: resolve => require(["@/components/blogHeader"], resolve),
     navMenus: resolve => require(["@/components/navMenus"], resolve)
-  }
+  },
+  computed: {
+    listen_outLogin() {
+      return this.$store.state.loginFlag;
+    }
+  },
+  watch: {
+    listen_outLogin: function(n, o) {
+      if (n == true) {
+        this.$router.push("/login");
+      }
+    }
+  },
 };
 </script>
 

@@ -1,6 +1,7 @@
 // let base = "http://localhost:3011"
 let base = "http://101.132.180.67:3020"
 import axios from "axios";
+import store from '../store/index'
 const gl_ajax = requestData => {
     !requestData.catchStatus ? requestData.catchStatus = [] : "";
     requestData.senderr === undefined ? requestData.senderr = true : ""
@@ -15,11 +16,9 @@ const gl_ajax = requestData => {
             params: requestData.method == "get" ? requestData.data : ""
         })
         .then(res => {
-
+            console.log(res)
             if (res.data.status == 500) {
-                this.$router.push({
-                    name: 'login'
-                })
+                store.commit("setloginflag_state", true);
             } else {
                 requestData.success ? requestData.success(res) : "";
             }

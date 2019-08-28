@@ -73,7 +73,13 @@
           <!-- 录入图片 -->
           <div style="display:flex">
             <el-button type="primary" @click="uploadImg">上传图片</el-button>
-            <img class="s_img" :src="base+'/'+cBlog.base64" alt="点击上传图片" />
+            <img
+              class="s_img"
+              v-if="cBlog.base64&&cBlog.base64.indexOf('base64') != -1"
+              :src="cBlog.base64"
+              alt="点击上传图片"
+            />
+            <img class="s_img" v-else :src="base+'/'+cBlog.base64" alt="点击上传图片" />
             <input
               style="display: none;"
               type="file"
