@@ -1,5 +1,6 @@
-import Vue from 'vue'
+// import Vue from 'vue'
 import vuex from 'vuex'
+// const vuex = require('vuex')
 Vue.use(vuex);
 
 let store = new vuex.Store({

@@ -97,24 +97,7 @@
         <div class="dtype">
           <div>类型：</div>
           <div>
-            <!-- <el-tag
-              :key="tag"
-              class="typeTag"
-              v-for="tag in aLinks.linkType"
-              closable
-              :disable-transitions="false"
-              @close="handleClose('aLinks',tag)"
-            >{{tag}}</el-tag>
-            <el-input
-              class="input-new-tag"
-              v-if="inputVisible"
-              v-model="inputValue"
-              ref="saveTagInput"
-              size="small"
-              @keyup.enter.native="handleInput('aLinks')"
-              @blur="handleInput('aLinks')"
-            ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>-->
+           
             <el-select
               size="small"
               style="width:150px;"
