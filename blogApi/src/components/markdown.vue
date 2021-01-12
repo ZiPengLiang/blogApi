@@ -1,6 +1,6 @@
 <template >
   <div class="markdown">
-    <mavon-editor class="md" v-model="mdvalue" @save="saveText" />
+    <mavon-editor class="md" v-model="mdvalue" @save="saveText" :navigation="true" />
   </div>
 </template>
 <script>

@@ -18,6 +18,7 @@ import {
     MenuItem,
     MenuItemGroup,
     Message,
+    MessageBox,
 } from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import mavonEditor from 'mavon-editor'
@@ -42,6 +43,7 @@ Vue.use(MenuItemGroup);
 Vue.prototype.axios = axios;
 Vue.prototype.gl_ajax = gl_ajax;
 Vue.prototype.$message = Message;
+Vue.prototype.$confirm = MessageBox.confirm;
 axios.defaults.headers.post["Content-Type"] = "application/json; charset=UTF-8";
 Vue.config.productionTip = false
 

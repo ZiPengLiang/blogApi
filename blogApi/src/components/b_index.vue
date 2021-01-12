@@ -1,15 +1,17 @@
 <template>
   <div class="blogMain">
-    <div class="datalists" v-if="tableData.dataList.length!=0">
+    <div class="datalists" v-if="tableData.dataList.length != 0">
       <table class="dataTable" v-loading="loading" id="dataTable">
         <thead>
-          <th v-for="(item,index) in tableData.itemList" :key="index">{{item.label}}</th>
+          <th v-for="(item, index) in tableData.itemList" :key="index">
+            {{ item.label }}
+          </th>
         </thead>
         <tbody>
-          <tr v-for="(item,index) in tableData.dataList" :key="index">
-            <td v-for="(v,k) in item" :key="k">
-              <div v-if="k.indexOf('type')==-1">
-                <span v-if="k.indexOf('top') == -1">{{v}}</span>
+          <tr v-for="(item, index) in tableData.dataList" :key="index">
+            <td v-for="(v, k) in item" :key="k">
+              <div v-if="k.indexOf('type') == -1">
+                <span v-if="k.indexOf('top') == -1">{{ v }}</span>
                 <el-switch
                   v-else
                   v-model="item.top"
@@ -19,7 +21,9 @@
                 ></el-switch>
               </div>
               <div v-else>
-                <el-tag class="typeTag" v-for="(t,i) in v" :key="i">{{t}}</el-tag>
+                <el-tag class="typeTag" v-for="(t, i) in v" :key="i">{{
+                  t
+                }}</el-tag>
               </div>
             </td>
             <td>
@@ -43,10 +47,19 @@
       </div>
     </div>
     <div class="nomessage" v-else>暂无信息，请添加博客</div>
-    <el-dialog title="编辑博客" v-loading="loading" :visible.sync="changeBlogViable" class="blogDialog">
+    <el-dialog
+      title="编辑博客"
+      v-loading="loading"
+      :visible.sync="changeBlogViable"
+      class="blogDialog"
+    >
       <div class="data">
         <div class="dtitle">
-          <el-input placeholder="请输入内容" v-model="cBlog.title" clearable></el-input>
+          <el-input
+            placeholder="请输入内容"
+            v-model="cBlog.title"
+            clearable
+          ></el-input>
         </div>
         <div class="dtype">
           <!-- 文章分类 -->
@@ -58,7 +71,8 @@
               closable
               :disable-transitions="false"
               @close="handleClose(tag)"
-            >{{tag}}</el-tag>
+              >{{ tag }}</el-tag
+            >
             <el-input
               class="input-new-tag"
               v-if="inputVisible"
@@ -68,20 +82,31 @@
               @keyup.enter.native="handleInputConfirm"
               @blur="handleInputConfirm"
             ></el-input>
-            <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+            <el-button
+              v-else
+              class="button-new-tag"
+              size="small"
+              @click="showInput"
+              >+ New Tag</el-button
+            >
           </div>
           <!-- 录入图片 -->
-          <div style="display:flex">
+          <div style="display: flex">
             <el-button type="primary" @click="uploadImg">上传图片</el-button>
             <img
               class="s_img"
-              v-if="cBlog.base64&&cBlog.base64.indexOf('base64') != -1"
+              v-if="cBlog.base64 && cBlog.base64.indexOf('base64') != -1"
               :src="cBlog.base64"
               alt="点击上传图片"
             />
-            <img class="s_img" v-else :src="base+'/'+cBlog.base64" alt="点击上传图片" />
+            <img
+              class="s_img"
+              v-else
+              :src="base + '/' + cBlog.base64"
+              alt="点击上传图片"
+            />
             <input
-              style="display: none;"
+              style="display: none"
               type="file"
               accept="image/*"
               ref="BlogImg"
@@ -92,7 +117,7 @@
           <div>
             <el-select
               size="small"
-              style="width:150px;"
+              style="width: 150px"
               v-model="cBlog.classification"
               placeholder="请选择"
             >
@@ -118,35 +143,51 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="changeBlogViable = false">取消</el-button>
-        <el-button class="btnColor" type="primary" @click="commitBlog">确定编辑</el-button>
+        <el-button class="btnColor" type="primary" @click="commitBlog"
+          >确定编辑</el-button
+        >
       </span>
     </el-dialog>
-    <el-dialog title="查看博客" :visible.sync="checkBlogViable" class="blogDialog">
+    <el-dialog
+      title="查看博客"
+      :visible.sync="checkBlogViable"
+      class="blogDialog"
+    >
       <div class="mdtohtml">
         <div class="a_header">
-          <p class="title">{{cBlog.title}}</p>
+          <p class="title">{{ cBlog.title }}</p>
           <p class="about">
             <span>
               <i class="el-icon-time"></i>
-              {{timeFormat(cBlog.date)}}
+              {{ timeFormat(cBlog.date) }}
             </span>
             <span>
               <i class="el-icon-view"></i>
-              {{cBlog.watch}}
+              {{ cBlog.watch }}
             </span>
             <span>
               <i class="el-icon-aim"></i>
-              {{cBlog.classification =='summary'?'知识总结':'生活牢骚'}}
+              {{ cBlog.classification == "summary" ? "知识总结" : "生活牢骚" }}
             </span>
           </p>
           <div class="type">
-            <span v-for="(item,index) in cBlog.blogType" :key="index" class="t_button">{{item}}</span>
+            <span
+              v-for="(item, index) in cBlog.blogType"
+              :key="index"
+              class="t_button"
+              >{{ item }}</span
+            >
           </div>
         </div>
         <div v-html="cBlog.render"></div>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button class="btnColor" type="primary" @click="checkBlogViable = false">确认</el-button>
+        <el-button
+          class="btnColor"
+          type="primary"
+          @click="checkBlogViable = false"
+          >确认</el-button
+        >
       </span>
     </el-dialog>
   </div>
@@ -172,8 +213,8 @@ export default {
       this.$confirm("是否删除该文章，删除后无法恢复", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
-      }).then(actions => {
+        type: "warning",
+      }).then((actions) => {
         if (actions == "confirm") {
           that.loading = true;
           that.gl_ajax({
@@ -181,27 +222,27 @@ export default {
             url: "/delete",
             data: JSON.stringify({
               library: "blog",
-              _id: that.allBlog[index]._id
+              _id: that.allBlog[index]._id,
             }),
             success(res) {
               that.loading = false;
               if (res.data.status == 0) {
                 that.$message({
                   message: "删除成功",
-                  type: "success"
+                  type: "success",
                 });
                 that.getBlog();
               } else {
                 that.$message({
                   message: "删除失败",
-                  type: "warning"
+                  type: "warning",
                 });
               }
             },
             error(err) {
               that.loading = false;
               console.log("deleteBlog:" + err);
-            }
+            },
           });
         }
       });
@@ -221,7 +262,7 @@ export default {
           pageno: that.selectData.pageno,
           pagesize: that.selectData.pagesize,
           data: {},
-          library: "blog"
+          library: "blog",
         },
         success(res) {
           if (res.data.status == 0) {
@@ -230,7 +271,7 @@ export default {
             that.current = data.count;
             let bdata = data.data;
             that.tableData.dataList = [];
-            bdata.forEach(item => {
+            bdata.forEach((item) => {
               let object = {};
               object["date"] = that.timeFormat(item.date);
               object["title"] = item.title;
@@ -248,12 +289,12 @@ export default {
         error(err) {
           that.loading = false;
           console.log(err.message);
-        }
+        },
       });
     },
     showInput() {
       this.inputVisible = true;
-      this.$nextTick(_ => {
+      this.$nextTick((_) => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
@@ -285,34 +326,34 @@ export default {
       this.$confirm(title, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        type: "warning"
+        type: "warning",
       })
-        .then(actions => {
+        .then((actions) => {
           if (actions == "confirm") {
             that
               .setBlog({
                 _id: that.allBlog[index]._id,
                 data: {
-                  toTop: !that.allBlog[index].toTop
-                }
+                  toTop: !that.allBlog[index].toTop,
+                },
               })
-              .then(res => {
+              .then((res) => {
                 if (res.data.status == 0) {
                   that.$message({
                     message: "修改成功",
-                    type: "success"
+                    type: "success",
                   });
                 } else {
                   that.$message({
                     message: "修改失败",
-                    type: "warning"
+                    type: "warning",
                   });
                 }
                 that.getBlog();
               });
           }
         })
-        .catch(_ => {
+        .catch((_) => {
           that.getBlog();
         });
     },
@@ -324,31 +365,31 @@ export default {
         let data = {
           blogType: cblog.blogType,
           classification: cblog.classification,
-          date: new Date().getTime(),
+
           mdvalue: cblog.mdvalue,
           render: cblog.render,
           title: cblog.title,
-          base64: cblog.base64
+          base64: cblog.base64,
         };
         that
           .setBlog({
             _id: cblog._id,
-            data
+            data,
           })
-          .then(res => {
+          .then((res) => {
             if (res.data.status == 0) {
               that.$message({
                 message: "修改成功",
-                type: "success"
+                type: "success",
               });
-              setTimeout(function() {
+              setTimeout(function () {
                 that.changeBlogViable = false;
                 that.getBlog();
               }, 1000);
             } else {
               that.$message({
                 message: "修改失败",
-                type: "success"
+                type: "success",
               });
               that.changeBlogViable = false;
             }
@@ -370,17 +411,17 @@ export default {
           data: JSON.stringify({
             library: "blog",
             _id,
-            data
+            data,
           }),
-          success: function(res) {
+          success: function (res) {
             that.loading = false;
             resolve(res);
           },
-          error: function(err) {
+          error: function (err) {
             that.loading = false;
             rejuct(err);
             console.log("err", err);
-          }
+          },
         });
       });
     },
@@ -404,7 +445,7 @@ export default {
       if (picavalue.size / 1024 > 10240) {
         that.$message({
           message: "图片过大",
-          type: "warning"
+          type: "warning",
         });
       } else {
         this.imageToBase64(picavalue, id);
@@ -425,11 +466,11 @@ export default {
         //将图片转成base64格式
         reader.readAsDataURL(file);
         //读取成功后的回调
-        reader.onloadend = function() {
+        reader.onloadend = function () {
           let result = this.result;
           let img = new Image();
           img.src = result;
-          img.onload = function() {
+          img.onload = function () {
             let data = self.compress(img, 0.3);
             self.cBlog.base64 = data;
           };
@@ -469,14 +510,14 @@ export default {
         method: "post",
         url: "/setPic",
         data: JSON.stringify({
-          data: $file.miniurl
+          data: $file.miniurl,
         }),
         success(res) {
           if (res.data.status == 0) {
             let url = that.base + "/" + res.data.data.imgurl;
             that.$refs.markdown.$img2Url(pos, url);
           }
-        }
+        },
       });
     },
     $imgDel(pos) {
@@ -486,11 +527,11 @@ export default {
         method: "post",
         url: "/deletepic",
         data: JSON.stringify({
-          data: imgName
+          data: imgName,
         }),
-        success(res) {}
+        success(res) {},
       });
-    }
+    },
   },
   mounted() {
     this.base = base;
@@ -501,7 +542,7 @@ export default {
       base: "",
       selectData: {
         pageno: 1,
-        pagesize: 10
+        pagesize: 10,
       },
       // 所有博客数
       current: 1,
@@ -510,12 +551,12 @@ export default {
       options: [
         {
           label: "知识总结",
-          value: "summary"
+          value: "summary",
         },
         {
           label: "生活牢骚",
-          value: "whining"
-        }
+          value: "whining",
+        },
       ],
       inputVisible: false,
       //加载中
@@ -528,36 +569,36 @@ export default {
         ifButton: true,
         itemList: [
           {
-            label: "日期"
+            label: "日期",
           },
           {
-            label: "题目"
+            label: "题目",
           },
           {
-            label: "类型"
+            label: "类型",
           },
           {
-            label: "浏览数"
+            label: "浏览数",
           },
           {
-            label: "评论数"
+            label: "评论数",
           },
           {
-            label: "顶置"
+            label: "顶置",
           },
           {
-            label: "操作"
-          }
+            label: "操作",
+          },
         ],
-        dataList: []
+        dataList: [],
       },
       inputValue: "",
       cBlog: {
         title: "",
-        blogType: []
-      }
+        blogType: [],
+      },
     };
-  }
+  },
 };
 </script>
 

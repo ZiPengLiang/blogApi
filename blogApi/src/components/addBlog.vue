@@ -2,7 +2,11 @@
   <div class="addblog">
     <div class="inputBox">
       <div class="header_input">
-        <el-input placeholder="请输入内容" v-model="blog.title" clearable></el-input>
+        <el-input
+          placeholder="请输入内容"
+          v-model="blog.title"
+          clearable
+        ></el-input>
         <el-button type="primary" @click="addBlog">提交文章</el-button>
       </div>
       <div class="type">
@@ -16,7 +20,7 @@
           分类：
           <el-select
             size="small"
-            style="width:150px;"
+            style="width: 150px"
             v-model="blog.classification"
             placeholder="请选择"
           >
@@ -32,7 +36,7 @@
         <div class="showImg">
           <el-button type="primary" @click="uploadImg">上传图片</el-button>
           <input
-            style="display: none;"
+            style="display: none"
             type="file"
             accept="image/*"
             ref="BlogImg"
@@ -62,7 +66,7 @@ import typeTag from "./typeTag";
 export default {
   components: {
     markdown,
-    typeTag
+    typeTag,
   },
   mounted() {
     this.base = base;
@@ -80,7 +84,6 @@ export default {
       let that = this;
       let title = this.blog.title.replace(/ /g, "");
       this.$refs.Tag.send();
-      this.blog.date = new Date().getTime();
       if (title && this.typeflag) {
         if (this.mdflag) {
           if (this.iconBase64) {
@@ -89,18 +92,18 @@ export default {
               url: "/insert",
               data: JSON.stringify({
                 library: "blog",
-                data: that.blog
+                data: that.blog,
               }),
               success(res) {
                 console.log(res);
                 if (res.data.status == 0) {
                   that.$message({
                     message: "录入成功",
-                    type: "success"
+                    type: "success",
                   });
-                  setTimeout(function() {
+                  setTimeout(function () {
                     that.$router.push({
-                      name: "blogMain"
+                      name: "blogMain",
                     });
                   }, 1000);
                 }
@@ -108,7 +111,7 @@ export default {
               error(err) {
                 console.log(err.message);
                 this.$message.error(err.message);
-              }
+              },
             });
           } else {
             this.$message.error("请录入封面图");
@@ -137,7 +140,7 @@ export default {
       if (picavalue.size / 1024 > 10240) {
         that.$message({
           message: "图片过大",
-          type: "warning"
+          type: "warning",
         });
       } else {
         this.imageToBase64(picavalue, id);
@@ -157,11 +160,11 @@ export default {
         //将图片转成base64格式
         reader.readAsDataURL(file);
         //读取成功后的回调
-        reader.onloadend = function() {
+        reader.onloadend = function () {
           let result = this.result;
           let img = new Image();
           img.src = result;
-          img.onload = function() {
+          img.onload = function () {
             let data = self.compress(img, 0.3);
             self.blog.base64 = data;
             self.iconBase64 = data;
@@ -191,14 +194,14 @@ export default {
         method: "post",
         url: "/setPic",
         data: JSON.stringify({
-          data: $file.miniurl
+          data: $file.miniurl,
         }),
         success(res) {
           if (res.data.status == 0) {
             let url = that.base + "/" + res.data.data.imgurl;
             that.$refs.markdown.$img2Url(pos, url);
           }
-        }
+        },
       });
     },
     $imgDel(pos) {
@@ -208,11 +211,11 @@ export default {
         method: "post",
         url: "/deletepic",
         data: JSON.stringify({
-          data: imgName
+          data: imgName,
         }),
-        success(res) {}
+        success(res) {},
       });
-    }
+    },
   },
   data() {
     return {
@@ -223,27 +226,26 @@ export default {
       options: [
         {
           label: "知识总结",
-          value: "summary"
+          value: "summary",
         },
         {
           label: "生活牢骚",
-          value: "whining"
-        }
+          value: "whining",
+        },
       ],
       blog: {
         title: "",
         mdvalue: "",
         render: "",
         blogType: [],
-        date: "",
         classification: "",
         toTop: false,
         watch: 0,
         comment: 0,
-        base64: ""
-      }
+        base64: "",
+      },
     };
-  }
+  },
 };
 </script>
 <style lang="scss" scoped>
